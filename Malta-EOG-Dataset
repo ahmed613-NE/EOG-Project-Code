@@ -1,1 +1,83 @@
+% Load the data
+load('EOG.mat'); % Assuming EOG.mat contains a variable named EOG
+load('ControlSignal.mat'); % Assuming ControlSignal.mat contains a variable named ControlSignal
+
+% Set sampling frequency
+Fs = 265;
+
+% Initialize counters for events
+event_count = 0;
+max_events = 30;  % We want to process the first 10 events
+event_indices = [];  % This will store the indices of the first 10 events
+
+% Loop through ControlSignal to find the indices of the first 10 events
+for i = 2:length(ControlSignal)
+    if ControlSignal(i) ~= ControlSignal(i-1) && ControlSignal(i) ~= 0
+        event_count = event_count + 1;
+        event_indices = [event_indices, i];
+        
+        if event_count == max_events
+            break;
+        end
+    end
+end
+
+% Use the indices to select the corresponding EOG and ControlSignal data
+if ~isempty(event_indices)
+    % Consider a window around each event, e.g., 1 second (265 samples)
+    event_window = 265; % 1 second window (adjust if needed)
+    
+    % Extract data for the first 10 events
+    start_index = max(1, event_indices(1) - event_window);
+    end_index = min(length(ControlSignal), event_indices(end) + event_window);
+    
+    EOG_subset = EOG(:, start_index:end_index);
+    ControlSignal_subset = ControlSignal(start_index:end_index);
+    
+    % Get time vector for the subset
+    num_samples = size(EOG_subset, 2);
+    time_subset = (0:num_samples-1) / Fs;
+    
+    % Plot the EOG signals for the first 10 events
+    figure;
+    subplot(3, 1, 1);
+    plot(time_subset, EOG_subset(1, :));
+    xlabel('Time (s)');
+    ylabel('Horizontal EOG');
+    title('Horizontal EOG Component (First 10 Events)');
+    xticks(0:4:40);
+    
+    subplot(3, 1, 2);
+    plot(time_subset, EOG_subset(2, :));
+    xlabel('Time (s)');
+    ylabel('Vertical EOG');
+    title('Vertical EOG Component (First 10 Events)');
+    xticks(0:4:40);
+    
+    % Plot the control signal for the first 10 events
+    subplot(3, 1, 3);
+    plot(time_subset, ControlSignal_subset, 'r');
+    xlabel('Time (s)');
+    ylabel('Control Signal');
+    title('Control Signal (1 = Forward Saccade, 2 = Return Saccade, 3 = Blink)');
+    xticks(0:4:40);
+
+    % Overlay markers for direction of gaze
+    hold on;
+    for i = 1:num_samples
+        if ControlSignal_subset(i) == 1
+            plot(time_subset(i), 1, 'g*'); % Forward Saccade
+        elseif ControlSignal_subset(i) == 2
+            plot(time_subset(i), 2, 'b*'); % Return Saccade
+        elseif ControlSignal_subset(i) == 3
+            plot(time_subset(i), 3, 'k*'); % Blink
+        end
+    end
+    hold off;
+    
+    % Adjust y-axis to better distinguish control signal values
+    ylim([0.5 3.5]);
+else
+    disp('No events found in the dataset.');
+end
 
