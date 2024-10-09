@@ -1,27 +1,37 @@
 close all, clear, clc
 mainpath = 'C:\Users\74147\OneDrive\Documents\MATLAB\EOG-Project-Code-main\Data\EOG_Recording\';
 addpath(mainpath);
-addpath('C:\Users\74147\OneDrive\Documents\MATLAB\EOG-Project-Code-main\THIRDEYE\Code')
+addpath('C:\Users\74147\OneDrive\Documents\MATLAB\EOG-Project-Code-main\THIRDEYE\Code');
+% addpath('C:\Users\74147\OneDrive\Documents\BYB\')
 NumFile = 4;
 LinedupResultSum = [];
+%%
 for i = 1:NumFile
  Document = i;% 3 is the best data we have for now
 switch Document
-    case 1
-EOGFilename= [mainpath 'BYB_Recording_2024-10-03_14.14.23.wav'];
-LabelFilename = [mainpath 'BYB_Recording_2024-10-03_14.14.23-events.txt'];
+    
+    case 1 
+EOGFilename= [mainpath 'BYB_Recording_2024-10-09_10.22.55.wav'];
+LabelFilename = [mainpath 'BYB_Recording_2024-10-09_10.22.55-events.txt'];
+Angles = [0 -10 10 -20 20 -30 30 -40 40 -50 50 10 -10 20 -20 30 -30 40 -40 50 -50];
+
     case 2
-EOGFilename= [mainpath 'BYB_Recording_2024-10-03_14.12.49.wav'];
-LabelFilename = [mainpath 'BYB_Recording_2024-10-03_14.12.49-events.txt'];
-    case 3
-EOGFilename= [mainpath 'BYB_Recording_2024-10-03_14.07.24.wav'];
-LabelFilename = [mainpath 'BYB_Recording_2024-10-03_14.07.24-events.txt'];
-    case 4
-EOGFilename= [mainpath 'BYB_Recording_2024-10-03_14.03.33.wav'];
-LabelFilename = [mainpath 'BYB_Recording_2024-10-03_14.03.33-events.txt'];
+EOGFilename= [mainpath 'BYB_Recording_2024-10-09_10.14.36.wav'];
+LabelFilename = [mainpath 'BYB_Recording_2024-10-09_10.14.36-events.txt'];
+Angles = [0 -10 10 -20 20 -30 30 -40 40 -50 50 10 -10 20 -20 30 -30 40 -40 50 -50];
+
+    case 3 
+EOGFilename= [mainpath 'BYB_Recording_2024-10-09_10.40.23.wav'];
+LabelFilename = [mainpath 'BYB_Recording_2024-10-09_10.40.23-events.txt'];
+Angles = [0 -10 10 -20 20 -30 30 -40 40 -50 50 10 -10 20 -20 30 -30 40 -40 50 -50];
+
+    case 4 
+EOGFilename= [mainpath 'BYB_Recording_2024-10-09_10.44.30.wav'];
+LabelFilename = [mainpath 'BYB_Recording_2024-10-09_10.44.30-events.txt'];
+Angles = [0 -10 10 -20 20 -30 30 -40 40 -50 50 10 -10 20 -20 30 -30 40 -40 50 -50];
 end
-Angles = [0 10 -10 20 -20 30 -30 40 -40 50 -50 -10 10 -20 20 -30 30 -40 40 -50 50];
 Events = AngleLiner(LabelFilename,Angles);
+
 [EOGsignal, fs]= audioread(EOGFilename);
 %% Downsample
 Downsamplefactor = 130;
@@ -72,12 +82,12 @@ hold off;
 
 
 %% Event-Centered Analysis 
-
 fs = 10000;
 % Parameters
 window = 0.5; % Time window around each event in seconds
 numEvents = length(eventTimes);
-fs= fs/Downsamplefactor;
+fs = fs / Downsamplefactor;
+
 % Define the number of rows and columns for the grid
 rows = 4; % Number of rows per figure
 cols = 3; % Number of columns per figure
@@ -85,8 +95,8 @@ segmentsPerFigure = rows * cols;
 
 % Create figures based on the number of events
 numFigures = ceil(numEvents / segmentsPerFigure);
-PeakEOGValue = zeros(1,length(eventIDs));
-PeakEOGTime = zeros(1,length(eventIDs));
+PeakEOGValue = zeros(1, length(eventIDs));
+PeakEOGTime = zeros(1, length(eventIDs));
 
 for figIdx = 1:numFigures
     figure;
@@ -102,37 +112,137 @@ for figIdx = 1:numFigures
         % Determine start and end times for each segment
         startTime = max(eventTimes(i) - window, 0);
         endTime = min(eventTimes(i) + window, timeAxis(end));
+             % Convert start and end times to indices
         segmentIdx = round([startTime, endTime] * fs);
+        
+        % Ensure segmentIdx is within valid bounds
+        segmentIdx(1) = max(1, segmentIdx(1));  % Ensure index is at least 1
+        segmentIdx(2) = min(length(DSEOGsignal), segmentIdx(2));  % Ensure index does not exceed the signal length
+        
+        % Extract the EOG segment
         EOGSegment = DSEOGsignal(segmentIdx(1):segmentIdx(2));
         segmentTimeAxis = (segmentIdx(1):segmentIdx(2)) / fs;
-        [ampmax,locsmax]=max(EOGSegment);
-        [ampmin,locsmin]=min(EOGSegment);
-        if abs(ampmax) > abs(ampmin)
-        amp = ampmax;
-        locs = locsmax;
-        else
-        amp = ampmin;
-        locs = locsmin;
-        end
-        PeakEOGValue(i)= amp;
         
-        PeakEOGTime(i)=segmentTimeAxis(locs);
         % Plot the segment
         plot(segmentTimeAxis, EOGSegment);
         xlabel('Time (s)');
         ylabel('Amplitude');
         title(['Event ' num2str(eventIDs(i))]);
+        
+        % Find peaks based on eventID
+        if eventIDs(i) == 1
+            % Find median peak value and its time
+            sortedSegment = sort(EOGSegment);
+            medianPeakValue = median(sortedSegment);
+            locs = find(EOGSegment == medianPeakValue, 1); % Find the location of the median value
+            PeakEOGValue(i) = 0;
+            % keyboard
+            PeakEOGTime(i) = startTime;
+            
+        elseif eventIDs(i) == 2
+            % Find maximum peak value and its time
+            [maxPeakValue, locs] = max(EOGSegment);
+            PeakEOGValue(i) = maxPeakValue;
+            PeakEOGTime(i) = segmentTimeAxis(locs);
+            
+        elseif eventIDs(i) == 3
+            % Find minimum peak value and its time
+            [minPeakValue, locs] = min(EOGSegment);
+            PeakEOGValue(i) = minPeakValue;
+            PeakEOGTime(i) = segmentTimeAxis(locs);
+        end
+        
+        % Mark the selected peak on the plot
+        hold on;
+        plot(PeakEOGTime(i), PeakEOGValue(i), 'ro', 'MarkerSize', 8);
+        hold off;
     end
-   
 end
+
+% fs = 10000;
+% Parameters
+% window = 0.5; % Time window around each event in seconds
+% numEvents = length(eventTimes);
+% fs = fs / Downsamplefactor;
+% 
+% Define the number of rows and columns for the grid
+% rows = 4; % Number of rows per figure
+% cols = 3; % Number of columns per figure
+% segmentsPerFigure = rows * cols;
+% 
+% Create figures based on the number of events
+% numFigures = ceil(numEvents / segmentsPerFigure);
+% PeakEOGValue = zeros(1, length(eventIDs));
+% PeakEOGTime = zeros(1, length(eventIDs));
+% 
+% for figIdx = 1:numFigures
+%     figure;
+%     sgtitle(['Audio Segments around Events - Figure ' num2str(figIdx)]);
+% 
+%     Determine the range of events to plot in this figure
+%     startIdx = (figIdx - 1) * segmentsPerFigure + 1;
+%     endIdx = min(figIdx * segmentsPerFigure, numEvents);
+% 
+%     for i = startIdx:endIdx
+%         subplot(rows, cols, i - startIdx + 1);
+% 
+%         Determine start and end times for each segment
+%         startTime = max(eventTimes(i) - window, 0);
+%         endTime = min(eventTimes(i) + window, timeAxis(end));
+%         segmentIdx = round([startTime, endTime] * fs);
+%         EOGSegment = DSEOGsignal(segmentIdx(1):segmentIdx(2));
+%         segmentTimeAxis = (segmentIdx(1):segmentIdx(2)) / fs;
+% 
+%         Plot the segment
+%         plot(segmentTimeAxis, EOGSegment);
+%         xlabel('Time (s)');
+%         ylabel('Amplitude');
+%         title(['Event ' num2str(eventIDs(i))]);
+% 
+%         % Loop for manual selection with a go-back option
+%         confirmed = false;
+%         while ~confirmed
+%             disp(['Click on the peak for Event ' num2str(eventIDs(i))]);
+%             [x, y] = ginput(1);  % Let the user select the point
+% 
+%             % Find the closest time and amplitude to the clicked point
+%             [~, closestIdx] = min(abs(segmentTimeAxis - x));
+%             selectedTime = segmentTimeAxis(closestIdx);
+%             selectedAmplitude = EOGSegment(closestIdx);
+% 
+%             % Mark the selected peak on the plot
+%             hold on;
+%             plot(selectedTime, selectedAmplitude, 'ro', 'MarkerSize', 8);
+%             hold off;
+% 
+%             % Ask for confirmation
+%             choice = questdlg('Are you satisfied with this selection?', ...
+%                               'Confirmation', ...
+%                               'Yes', 'No', 'Yes');
+% 
+%             if strcmp(choice, 'Yes')
+%                 PeakEOGTime(i) = selectedTime;
+%                 PeakEOGValue(i) = selectedAmplitude;
+%                 confirmed = true;
+%             else
+%                 % Clear the red circle and allow the user to select again
+%                 hold on;
+%                 plot(selectedTime, selectedAmplitude, 'w+', 'MarkerSize', 8); % Overwrite the marker
+%                 hold off;
+%             end
+%         end
+%     end
+% end
 
 %%
 Labelandpeakdifference = Events(:,2)-PeakEOGTime';
 LinedupResult = [Events PeakEOGTime' PeakEOGValue' Labelandpeakdifference];
 LinedupResultSum = [LinedupResultSum;LinedupResult];
+
+keyboard
 end
 %%
-degreeofpolyfit = 5;
+degreeofpolyfit = 2;
 Model = polyfit(LinedupResultSum(:,5),LinedupResultSum(:,3),degreeofpolyfit)
 
 x_fit = linspace(-50,50,10000);
