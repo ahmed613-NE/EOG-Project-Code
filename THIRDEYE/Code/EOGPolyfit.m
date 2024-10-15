@@ -3,7 +3,7 @@ mainpath = 'C:\Users\74147\OneDrive\Documents\MATLAB\EOG-Project-Code-main\Data\
 addpath(mainpath);
 addpath('C:\Users\74147\OneDrive\Documents\MATLAB\EOG-Project-Code-main\THIRDEYE\Code');
 % addpath('C:\Users\74147\OneDrive\Documents\BYB\')
-NumFile = 4;
+NumFile = 7;
 LinedupResultSum = [];
 %%
 for i = 1:NumFile
@@ -29,7 +29,20 @@ Angles = [0 -10 10 -20 20 -30 30 -40 40 -50 50 10 -10 20 -20 30 -30 40 -40 50 -5
 EOGFilename= [mainpath 'BYB_Recording_2024-10-09_10.44.30.wav'];
 LabelFilename = [mainpath 'BYB_Recording_2024-10-09_10.44.30-events.txt'];
 Angles = [0 -10 10 -20 20 -30 30 -40 40 -50 50 10 -10 20 -20 30 -30 40 -40 50 -50];
+    case 5 
+        EOGFilename= [mainpath 'BYB_Recording_2024-10-12_16.06.22_S10.wav'];
+LabelFilename = [mainpath 'BYB_Recording_2024-10-12_16.06.22-events_S10.txt'];
+Angles = '';
+    case 6 
+        EOGFilename= [mainpath 'BYB_Recording_2024-10-12_16.16.08_S20.wav'];
+LabelFilename = [mainpath 'BYB_Recording_2024-10-12_16.16.08-events_S20.txt'];
+Angles = '';
+    case 7 
+        EOGFilename= [mainpath 'BYB_Recording_2024-10-12_16.18.52_S30.wav'];
+LabelFilename = [mainpath 'BYB_Recording_2024-10-12_16.18.52-events_S30.txt'];
+Angles = '';
 end
+close all;
 Events = AngleLiner(LabelFilename,Angles);
 
 [EOGsignal, fs]= audioread(EOGFilename);
@@ -95,8 +108,14 @@ segmentsPerFigure = rows * cols;
 
 % Create figures based on the number of events
 numFigures = ceil(numEvents / segmentsPerFigure);
+if Document <5
 PeakEOGValue = zeros(1, length(eventIDs));
 PeakEOGTime = zeros(1, length(eventIDs));
+else
+PeakEOGValue = zeros(1, length(eventIDs)*2);
+PeakEOGTime = zeros(1, length(eventIDs)*2);
+end
+
 
 for figIdx = 1:numFigures
     figure;
@@ -127,10 +146,14 @@ for figIdx = 1:numFigures
         plot(segmentTimeAxis, EOGSegment);
         xlabel('Time (s)');
         ylabel('Amplitude');
-        title(['Event ' num2str(eventIDs(i))]);
+        num = eventIDs(i);
+        Eventing = [{'Baseline'},{'Left Saccade'},{'Right Saccade'}];
+        title([Eventing(num)]);
         
         % Find peaks based on eventID
         if eventIDs(i) == 1
+
+            if Document<5 
             % Find median peak value and its time
             sortedSegment = sort(EOGSegment);
             medianPeakValue = median(sortedSegment);
@@ -138,7 +161,16 @@ for figIdx = 1:numFigures
             PeakEOGValue(i) = 0;
             % keyboard
             PeakEOGTime(i) = startTime;
-            
+            else
+            % Find minimum peak value and its time
+            [minPeakValue, locsmin] = min(EOGSegment);
+            [maxPeakValue, locsmax] = max(EOGSegment);
+            % Store the two values and their times
+                idx = 2 * (i - 1) + 1; % Calculate the starting index for storing two values
+                PeakEOGValue(idx:idx+1) = [minPeakValue, maxPeakValue];
+                PeakEOGTime(idx:idx+1) = segmentTimeAxis([locsmin, locsmax]);
+            end
+
         elseif eventIDs(i) == 2
             % Find maximum peak value and its time
             [maxPeakValue, locs] = max(EOGSegment);
@@ -235,17 +267,20 @@ end
 % end
 
 %%
-Labelandpeakdifference = Events(:,2)-PeakEOGTime';
-LinedupResult = [Events PeakEOGTime' PeakEOGValue' Labelandpeakdifference];
+% Labelandpeakdifference = Events(:,2)-PeakEOGTime';
+if Document >4
+Events = repmat(Events,2,1);
+end
+LinedupResult = [Events PeakEOGTime' PeakEOGValue'];
 LinedupResultSum = [LinedupResultSum;LinedupResult];
-
-keyboard
+% keyboard
 end
 %%
-degreeofpolyfit = 2;
+degreeofpolyfit = 3;
+% keyboard
 Model = polyfit(LinedupResultSum(:,5),LinedupResultSum(:,3),degreeofpolyfit)
 
-x_fit = linspace(-50,50,10000);
+x_fit = linspace(-1,1,10000);
 y_fit = polyval(Model,x_fit);
 
 figure;
@@ -264,7 +299,7 @@ xlabel('EOG Signal');
 ylabel('Eye Angle');
 title('Polynomial Fit');
 xlim([min(LinedupResult(:,5)) max(LinedupResult(:,5))])
-ylim([min(LinedupResult(:,3)) max(LinedupResult(:,3))])
+% ylim([min(LinedupResult(:,3)) max(LinedupResult(:,3))])
 
 % Add legend
 legend('show');
