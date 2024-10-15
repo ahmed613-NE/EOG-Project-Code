@@ -24,15 +24,12 @@ end
 if width(labeltime)>2
     Events = table2array(labeltime);
     
-else
-lengthevent = length(Label);
-lengthAngle = length(Angles);
-if lengthevent < lengthAngle
-Events = [Label;time;Angles(1:length(Label))]';
-disp('Hmmm We get less marker than we should')
-else
-Events = [Label(1:length(Angles));time(1:length(Angles));Angles]';
-disp('That looks about right')
-end
+elseif contains(BYBEvents,'_S')
+Ang = extractBetween(BYBEvents,'S','.');
+Ang1 = str2double(Ang);
+% keyboard
+Angles = ones(height(labeltime),1).*Ang1;
+labeltime = table2array(labeltime);
+Events = [labeltime,Angles];
 end
 end
