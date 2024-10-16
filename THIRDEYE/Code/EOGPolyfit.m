@@ -49,6 +49,8 @@ Events = AngleLiner(LabelFilename,Angles);
 %% Downsample
 Downsamplefactor = 130;
 DSEOGsignal = downsample(EOGsignal,Downsamplefactor); % fs = 10000 Hz downsample by 100 time so 
+% Normalization
+DSEOGsignal = normalize(DSEOGsignal);
 DSTime = [0+Downsamplefactor/fs:Downsamplefactor/fs:Downsamplefactor/fs*length(DSEOGsignal)];
 Time = [0+1/fs:1/fs:1/fs*length(EOGsignal)];
 figure;
@@ -161,6 +163,8 @@ for figIdx = 1:numFigures
             PeakEOGValue(i) = 0;
             % keyboard
             PeakEOGTime(i) = startTime;
+             hold on;
+        plot(PeakEOGTime(i), PeakEOGValue(i), 'ro', 'MarkerSize', 8);
             else
             % Find minimum peak value and its time
             [minPeakValue, locsmin] = min(EOGSegment);
@@ -169,6 +173,9 @@ for figIdx = 1:numFigures
                 idx = 2 * (i - 1) + 1; % Calculate the starting index for storing two values
                 PeakEOGValue(idx:idx+1) = [minPeakValue, maxPeakValue];
                 PeakEOGTime(idx:idx+1) = segmentTimeAxis([locsmin, locsmax]);
+                 hold on;
+        plot(PeakEOGTime(idx), PeakEOGValue(idx), 'ro', 'MarkerSize', 8);
+        plot(PeakEOGTime(idx+1), PeakEOGValue(idx+1), 'bo', 'MarkerSize', 8);
             end
 
         elseif eventIDs(i) == 2
@@ -176,17 +183,22 @@ for figIdx = 1:numFigures
             [maxPeakValue, locs] = max(EOGSegment);
             PeakEOGValue(i) = maxPeakValue;
             PeakEOGTime(i) = segmentTimeAxis(locs);
-            
+             hold on;
+        plot(PeakEOGTime(i), PeakEOGValue(i), 'ro', 'MarkerSize', 8);
+       
         elseif eventIDs(i) == 3
             % Find minimum peak value and its time
             [minPeakValue, locs] = min(EOGSegment);
             PeakEOGValue(i) = minPeakValue;
             PeakEOGTime(i) = segmentTimeAxis(locs);
+             hold on;
+        plot(PeakEOGTime(i), PeakEOGValue(i), 'ro', 'MarkerSize', 8);
+        
         end
         
         % Mark the selected peak on the plot
-        hold on;
-        plot(PeakEOGTime(i), PeakEOGValue(i), 'ro', 'MarkerSize', 8);
+       
+        
         hold off;
     end
 end
@@ -280,7 +292,7 @@ degreeofpolyfit = 3;
 % keyboard
 Model = polyfit(LinedupResultSum(:,5),LinedupResultSum(:,3),degreeofpolyfit)
 
-x_fit = linspace(-1,1,10000);
+x_fit = linspace(-10,10,10000);
 y_fit = polyval(Model,x_fit);
 
 figure;
