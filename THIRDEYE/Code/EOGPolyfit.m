@@ -6,7 +6,7 @@ addpath('C:\Users\74147\OneDrive\Documents\MATLAB\EOG-Project-Code-main\THIRDEYE
 NumFile = 10;
 LinedupResultSum = [];
 %%
-for i = 8:10
+for i = 1:NumFile
  Document = i;% 3 is the best data we have for now
 switch Document
     
