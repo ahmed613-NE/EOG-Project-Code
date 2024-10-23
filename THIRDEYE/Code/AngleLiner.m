@@ -28,7 +28,9 @@ elseif contains(BYBEvents,'_S')
 Ang = extractBetween(BYBEvents,'S','.');
 Ang1 = str2double(Ang);
 % keyboard
-Angles = ones(height(labeltime),1).*Ang1;
+Angles = ones(height(labeltime),1);
+Angles(1:2:end) = -1;
+Angles = Angles.*Ang1;
 labeltime = table2array(labeltime);
 Events = [labeltime,Angles];
 end
