@@ -1,0 +1,39 @@
+#include <Servo.h>
+
+Servo myServo;
+int eogPin = A0; // EOG signal input pin
+float baseline = 570; // Fixed baseline
+float threshold = 200; // Fixed threshold
+int servoPositionClockwise = 90; // Position for clockwise movement
+int servoPositionCounterClockwise = 0; // Position for counter-clockwise movement
+
+void setup() {
+    myServo.attach(9); // Attach servo to pin 9
+    Serial.begin(230400);
+}
+
+void loop() {
+    int currentEOG = analogRead(eogPin);
+    
+    // Print the current EOG signal for visualization in the Serial Plotter
+    Serial.print("currentEOG: "); // Label for the plotter
+    Serial.println(currentEOG); // Print the value to be visualized
+
+    // Determine servo position based on EOG signal
+    if (currentEOG > baseline + threshold) {
+        myServo.write(servoPositionClockwise); // Move servo clockwise for right saccade
+        //Serial.println("Motor activated: Moving clockwise"); // Debug info
+    } 
+    else if (currentEOG < baseline - threshold) {
+        myServo.write(servoPositionCounterClockwise); // Move servo counter-clockwise for left saccade
+        //Serial.println("Motor activated: Moving counter-clockwise"); // Debug info
+    } 
+    else {
+        // Optional: Set servo to a neutral position or hold current position
+        // myServo.write(neutralPosition); // Uncomment to set a neutral position if needed
+       // Serial.println("Motor idle: No movement"); // Debug info
+    }
+
+    // Add a delay to prevent rapid movements
+    delay(1000); // Adjust as necessary
+}
