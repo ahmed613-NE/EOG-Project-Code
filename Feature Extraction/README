@@ -1,0 +1,18 @@
+
+data used: 
+
+BYB_Recording_2024-10-09_10.14.36.wav
+BYB_Recording_2024-10-09_10.14.36-events.txt
+
+
+
+run files in this order: 
+
+Feature_extraction.m 
+SVM_classif.m 
+
+
+
+
+
+
