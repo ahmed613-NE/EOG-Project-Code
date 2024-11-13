@@ -1,0 +1,24 @@
+#include <Servo.h>
+
+Servo myMotor;
+const int motorPin = 9;  // Pin connected to the motor
+
+void setup() {
+    Serial.begin(115200);
+    myMotor.attach(motorPin);
+}
+
+void loop() {
+    if (Serial.available() > 0) {
+        String command = Serial.readStringUntil('\n');  // Read command
+        
+        if (command == "CW") {
+            myMotor.write(0);  // Set motor to rotate clockwise (adjust as needed)
+            Serial.println("Motor rotating clockwise");
+        }
+        else if (command == "CCW") {
+            myMotor.write(180);  // Set motor to rotate counterclockwise (adjust as needed)
+            Serial.println("Motor rotating counterclockwise");
+        }
+    }
+}
