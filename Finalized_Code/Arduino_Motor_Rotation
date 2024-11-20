@@ -1,0 +1,33 @@
+#include <Servo.h> 
+
+Servo motor;  // Create a Servo object
+const int motorPin = 9;  // Pin connected to the servo signal
+
+
+void setup() {
+  Serial.begin(230400);     // Initialize serial communication
+  motor.attach(motorPin);  // Attach the servo to the specified pin
+  motor.write(90);         // Set initial position to 90 (middle position)
+
+  Serial.println("Ready to process angle and send commands.");
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    // Read the incoming angle as a string
+    
+    String angleStr = Serial.readStringUntil('\n');  // Read until newline
+    int angle = angleStr.toInt();  // Convert the angle string to an integer
+    int angleR = ((angle+5)/10)*10;
+    // Check if the angle is within valid range for the servo (0 to 180)
+    if (angle >= 0 && angle <= 180) {
+      motor.write(angleR);  // Rotate the servo to the specified angle
+
+      
+    } else {
+      Serial.println("Invalid angle received.");
+    }
+    delay(10);
+    Serial.flush();
+  }
+}
