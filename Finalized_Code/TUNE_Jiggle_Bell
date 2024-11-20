@@ -1,0 +1,82 @@
+#include <Adafruit_GFX.h>    // Core graphics library
+#include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
+#include <SPI.h>
+
+#define TFT_CS        39
+#define TFT_RST       37
+#define TFT_DC        38
+#define TFT_BACKLIGHT  7
+
+// Define musical notes for "Do, Re, Mi, etc."
+#define NOTE_C4  262  // Do
+#define NOTE_D4  294  // Re
+#define NOTE_E4  330  // Mi
+#define NOTE_F4  349  // Fa
+#define NOTE_G4  392  // Sol
+#define NOTE_A4  440  // La
+#define NOTE_B4  494  // Ti
+#define NOTE_C5  523  // High Do
+
+Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+
+void setup(void) {
+  Serial.begin(230400);
+  pinMode(TFT_BACKLIGHT, OUTPUT);
+  digitalWrite(TFT_BACKLIGHT, HIGH); // Backlight on
+
+  tft.initR(INITR_HALLOWING);
+  tft.fillScreen(ST77XX_BLACK);
+
+  Serial.println(F("TFT Initialized"));
+}
+
+void playNoteAndDisplay(const char *noteName, int note, uint16_t color) {
+  // Display the note on the screen
+  tft.setCursor(10, 30);
+  tft.setTextColor(color);
+  tft.setTextSize(2);
+  tft.print(noteName);
+
+  // Play the corresponding note
+  tone(A0, note, 500); // Play the note on pin 8 for 500ms
+  delay(500);         // Delay for the note duration
+  noTone(A0);          // Stop the tone
+}
+
+
+void loop() {
+  if (Serial.available() > 0) {
+    // Read the incoming angle as a string
+    
+    String angleStr = Serial.readStringUntil('\n');  // Read until newline
+    int angle = angleStr.toInt();  // Convert the angle string to an integer
+    int angleR = ((angle+5)/10)*10;
+    Serial.print("Angle : ");
+    Serial.println(angleR);
+    tft.fillScreen(ST77XX_BLACK); // Clear the screen
+
+  if (angleR >= 0 && angleR <= 20) {
+    playNoteAndDisplay("Do", NOTE_C4, ST77XX_RED);
+  } else if (angleR > 20 && angleR <= 40) {
+    playNoteAndDisplay("Re", NOTE_D4, ST77XX_ORANGE);
+  } else if (angleR > 40 && angleR <= 60) {
+    playNoteAndDisplay("Mi", NOTE_E4, ST77XX_YELLOW);
+  } else if (angleR > 60 && angleR <= 80) {
+    playNoteAndDisplay("Fa", NOTE_F4, ST77XX_GREEN);
+  } else if (angleR > 80 && angleR <= 100) {
+    playNoteAndDisplay("Sol", NOTE_G4, ST77XX_BLUE);
+  } else if (angleR > 100 && angleR <= 120) {
+    playNoteAndDisplay("La", NOTE_A4, ST77XX_ORANGE);
+  } else if (angleR > 120 && angleR <= 140) {
+    playNoteAndDisplay("Ti", NOTE_B4, ST77XX_YELLOW);
+  } else if (angleR > 140 && angleR <= 180) {
+    playNoteAndDisplay("High Do", NOTE_C5, ST77XX_WHITE);
+  }
+
+    delay(50); // Short delay for updates
+  }
+}
+
+
+
+
