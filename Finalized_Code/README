@@ -1,0 +1,4 @@
+Use Motor_Control to control the three microcontrollers.
+FeatherM0 (Hallowing) is the TFT one. (COM9)
+UNO is used to control Motor. (COM3)
+Backyard_brain is used to record EOG. (COM4)
