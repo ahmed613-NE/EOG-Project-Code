@@ -1,0 +1,506 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      -->
+<title>EOGPolyfit</title>
+<meta name="generator" content="MATLAB 24.2">
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
+<meta name="DC.date" content="2024-10-08">
+<meta name="DC.source" content="EOGPolyfit.m">
+<style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style>
+</head>
+<body>
+<div class="content">
+<h2>Contents</h2>
+<div>
+<ul>
+<li>
+<a href="#3">Downsample</a>
+</li>
+<li>
+<a href="#5">Event-Centered Analysis</a>
+</li>
+<li>
+<a href="#9">Calculate the power of the audio signal</a>
+</li>
+</ul>
+</div>
+<pre class="codeinput">close <span class="string">all</span>, clear, clc
+mainpath = <span class="string">'C:\Users\74147\OneDrive\Documents\MATLAB\EOG-Project-Code-main\Data\EOG_Recording\'</span>;
+addpath(mainpath);
+addpath(<span class="string">'C:\Users\74147\OneDrive\Documents\MATLAB\EOG-Project-Code-main\THIRDEYE\Code'</span>)
+NumFile = 4;
+LinedupResultSum = [];
+<span class="keyword">for</span> i = 1:NumFile
+</pre>
+<pre class="codeinput"> Document = i;<span class="comment">% 3 is the best data we have for now</span>
+<span class="keyword">switch</span> Document
+    <span class="keyword">case</span> 1
+EOGFilename= [mainpath <span class="string">'BYB_Recording_2024-10-03_14.14.23.wav'</span>];
+LabelFilename = [mainpath <span class="string">'BYB_Recording_2024-10-03_14.14.23-events.txt'</span>];
+    <span class="keyword">case</span> 2
+EOGFilename= [mainpath <span class="string">'BYB_Recording_2024-10-03_14.12.49.wav'</span>];
+LabelFilename = [mainpath <span class="string">'BYB_Recording_2024-10-03_14.12.49-events.txt'</span>];
+    <span class="keyword">case</span> 3
+EOGFilename= [mainpath <span class="string">'BYB_Recording_2024-10-03_14.07.24.wav'</span>];
+LabelFilename = [mainpath <span class="string">'BYB_Recording_2024-10-03_14.07.24-events.txt'</span>];
+    <span class="keyword">case</span> 4
+EOGFilename= [mainpath <span class="string">'BYB_Recording_2024-10-03_14.03.33.wav'</span>];
+LabelFilename = [mainpath <span class="string">'BYB_Recording_2024-10-03_14.03.33-events.txt'</span>];
+<span class="keyword">end</span>
+Angles = [0 10 -10 20 -20 30 -30 40 -40 50 -50 -10 10 -20 20 -30 30 -40 40 -50 50];
+Events = AngleLiner(LabelFilename,Angles);
+[EOGsignal, fs]= audioread(EOGFilename);
+</pre>
+<pre class="codeoutput">Warning: Column headers from the file were modified to make them valid MATLAB
+identifiers before creating variable names for the table. The original column
+headers are saved in the VariableDescriptions property.
+Set 'VariableNamingRule' to 'preserve' to use the original column headers as
+table variable names. 
+Hmmm We get less marker than we should
+</pre>
+<pre class="codeoutput">Warning: Column headers from the file were modified to make them valid MATLAB
+identifiers before creating variable names for the table. The original column
+headers are saved in the VariableDescriptions property.
+Set 'VariableNamingRule' to 'preserve' to use the original column headers as
+table variable names. 
+Hmmm We get less marker than we should
+</pre>
+<pre class="codeoutput">Warning: Column headers from the file were modified to make them valid MATLAB
+identifiers before creating variable names for the table. The original column
+headers are saved in the VariableDescriptions property.
+Set 'VariableNamingRule' to 'preserve' to use the original column headers as
+table variable names. 
+That looks about right
+</pre>
+<pre class="codeoutput">Warning: Column headers from the file were modified to make them valid MATLAB
+identifiers before creating variable names for the table. The original column
+headers are saved in the VariableDescriptions property.
+Set 'VariableNamingRule' to 'preserve' to use the original column headers as
+table variable names. 
+Hmmm We get less marker than we should
+</pre>
+<h2 id="3">Downsample</h2>
+<pre class="codeinput">Downsamplefactor = 130;
+DSEOGsignal = downsample(EOGsignal,Downsamplefactor); <span class="comment">% fs = 10000 Hz downsample by 100 time so</span>
+DSTime = [0+Downsamplefactor/fs:Downsamplefactor/fs:Downsamplefactor/fs*length(DSEOGsignal)];
+Time = [0+1/fs:1/fs:1/fs*length(EOGsignal)];
+figure;
+s1= subplot(2,1,1);
+plot(DSTime,DSEOGsignal);
+xlabel(<span class="string">'Time (s)'</span>)
+ylabel(<span class="string">'EOG signal (Unit tmd)'</span>)
+title(<span class="string">'Down Sampled Version (100 Hz)'</span>)
+s2 = subplot(2,1,2);
+plot(Time,EOGsignal);
+xlabel(<span class="string">'Time (s)'</span>)
+ylabel(<span class="string">'EOG signal (Unit tmd)'</span>)
+title(<span class="string">'Original Signal (10000 Hz)'</span>)
+linkaxes([s1,s2])
+disp(<span class="string">'Downsampling to 100 Hz looks fine,(Filtered from 9 to 22 so twice the Nyquist Frequency)'</span>)
+</pre>
+<pre class="codeoutput">Downsampling to 100 Hz looks fine,(Filtered from 9 to 22 so twice the Nyquist Frequency)
+</pre>
+<img vspace="5" hspace="5" src="EOGPolyfit_01.png" alt=""> <pre class="codeoutput">Downsampling to 100 Hz looks fine,(Filtered from 9 to 22 so twice the Nyquist Frequency)
+</pre>
+<img vspace="5" hspace="5" src="EOGPolyfit_05.png" alt=""> <pre class="codeoutput">Downsampling to 100 Hz looks fine,(Filtered from 9 to 22 so twice the Nyquist Frequency)
+</pre>
+<img vspace="5" hspace="5" src="EOGPolyfit_09.png" alt=""> <pre class="codeoutput">Downsampling to 100 Hz looks fine,(Filtered from 9 to 22 so twice the Nyquist Frequency)
+</pre>
+<img vspace="5" hspace="5" src="EOGPolyfit_13.png" alt=""> <p>Step 3: Plot the audio signal</p>
+<pre class="codeinput">eventTimes = Events(:,2);
+eventIDs = Events(:,1);
+EyeAngle = Events(:,3);
+timeAxis = DSTime; <span class="comment">% Time axis for the audio data</span>
+figure;
+plot(timeAxis, DSEOGsignal);
+xlabel(<span class="string">'Time (s)'</span>);
+ylabel(<span class="string">'Amplitude'</span>);
+title(<span class="string">'Audio Signal with Event Markers'</span>);
+hold <span class="string">on</span>;
+
+<span class="comment">% Step 4: Overlay event markers</span>
+<span class="keyword">for</span> i = 1:length(eventTimes)
+    <span class="comment">% Plot each event with a different color or marker</span>
+    <span class="keyword">if</span> eventIDs(i) == 1
+        plot(eventTimes(i), 0.1/2, <span class="string">'k*'</span>, <span class="string">'MarkerSize'</span>, 12, <span class="string">'DisplayName'</span>, <span class="string">'Event 1'</span>,<span class="string">'MarkerFaceColor'</span>,<span class="string">'k'</span>);
+    <span class="keyword">elseif</span> eventIDs(i) == 3
+        plot(eventTimes(i), 0.1/2, <span class="string">'ro'</span>, <span class="string">'MarkerSize'</span>, 12, <span class="string">'DisplayName'</span>, <span class="string">'Event 3'</span>,<span class="string">'MarkerFaceColor'</span>,<span class="string">'r'</span>);
+    <span class="keyword">elseif</span> eventIDs(i) == 2
+        plot(eventTimes(i), 0.1/2, <span class="string">'go'</span>, <span class="string">'MarkerSize'</span>, 12, <span class="string">'DisplayName'</span>, <span class="string">'Event 2'</span>,<span class="string">'MarkerFaceColor'</span>,<span class="string">'g'</span>);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+legend(<span class="string">'EOGsignal'</span>,<span class="string">'Center'</span>,<span class="string">'Looking Right'</span>,<span class="string">'Looking Left'</span>);
+hold <span class="string">off</span>;
+</pre>
+<img vspace="5" hspace="5" src="EOGPolyfit_02.png" alt=""> <img vspace="5" hspace="5" src="EOGPolyfit_06.png" alt=""> <img vspace="5" hspace="5" src="EOGPolyfit_10.png" alt=""> <img vspace="5" hspace="5" src="EOGPolyfit_14.png" alt=""> <h2 id="5">Event-Centered Analysis</h2>
+<pre class="codeinput">fs = 10000;
+<span class="comment">% Parameters</span>
+window = 0.5; <span class="comment">% Time window around each event in seconds</span>
+numEvents = length(eventTimes);
+fs= fs/Downsamplefactor;
+<span class="comment">% Define the number of rows and columns for the grid</span>
+rows = 4; <span class="comment">% Number of rows per figure</span>
+cols = 3; <span class="comment">% Number of columns per figure</span>
+segmentsPerFigure = rows * cols;
+
+<span class="comment">% Create figures based on the number of events</span>
+numFigures = ceil(numEvents / segmentsPerFigure);
+PeakEOGValue = zeros(1,length(eventIDs));
+PeakEOGTime = zeros(1,length(eventIDs));
+
+<span class="keyword">for</span> figIdx = 1:numFigures
+    figure;
+    sgtitle([<span class="string">'Audio Segments around Events - Figure '</span> num2str(figIdx)]);
+
+    <span class="comment">% Determine the range of events to plot in this figure</span>
+    startIdx = (figIdx - 1) * segmentsPerFigure + 1;
+    endIdx = min(figIdx * segmentsPerFigure, numEvents);
+
+    <span class="keyword">for</span> i = startIdx:endIdx
+        subplot(rows, cols, i - startIdx + 1);
+
+        <span class="comment">% Determine start and end times for each segment</span>
+        startTime = max(eventTimes(i) - window, 0);
+        endTime = min(eventTimes(i) + window, timeAxis(end));
+        segmentIdx = round([startTime, endTime] * fs);
+        EOGSegment = DSEOGsignal(segmentIdx(1):segmentIdx(2));
+        segmentTimeAxis = (segmentIdx(1):segmentIdx(2)) / fs;
+        [ampmax,locsmax]=max(EOGSegment);
+        [ampmin,locsmin]=min(EOGSegment);
+        <span class="keyword">if</span> abs(ampmax) &gt; abs(ampmin)
+        amp = ampmax;
+        locs = locsmax;
+        <span class="keyword">else</span>
+        amp = ampmin;
+        locs = locsmin;
+        <span class="keyword">end</span>
+        PeakEOGValue(i)= amp;
+
+        PeakEOGTime(i)=segmentTimeAxis(locs);
+        <span class="comment">% Plot the segment</span>
+        plot(segmentTimeAxis, EOGSegment);
+        xlabel(<span class="string">'Time (s)'</span>);
+        ylabel(<span class="string">'Amplitude'</span>);
+        title([<span class="string">'Event '</span> num2str(eventIDs(i))]);
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre>
+<img vspace="5" hspace="5" src="EOGPolyfit_03.png" alt=""> <img vspace="5" hspace="5" src="EOGPolyfit_04.png" alt=""> <img vspace="5" hspace="5" src="EOGPolyfit_07.png" alt=""> <img vspace="5" hspace="5" src="EOGPolyfit_08.png" alt=""> <img vspace="5" hspace="5" src="EOGPolyfit_11.png" alt=""> <img vspace="5" hspace="5" src="EOGPolyfit_12.png" alt=""> <img vspace="5" hspace="5" src="EOGPolyfit_15.png" alt=""> <img vspace="5" hspace="5" src="EOGPolyfit_16.png" alt=""> <pre class="codeinput">Labelandpeakdifference = Events(:,2)-PeakEOGTime';
+LinedupResult = [Events PeakEOGTime' PeakEOGValue' Labelandpeakdifference];
+LinedupResultSum = [LinedupResultSum;LinedupResult];
+close <span class="string">all</span>
+</pre>
+<pre class="codeinput">
+<span class="keyword">end</span>
+</pre>
+<pre class="codeinput">degreeofpolyfit = 5;
+Model = polyfit(LinedupResultSum(:,5),LinedupResultSum(:,3),degreeofpolyfit)
+
+x_fit = linspace(-50,50,10000);
+y_fit = polyval(Model,x_fit);
+
+figure;
+hold <span class="string">on</span>;
+
+<span class="comment">% Plot original data points</span>
+plot(LinedupResultSum(:,5),LinedupResultSum(:,3), <span class="string">'bo'</span>, <span class="string">'MarkerSize'</span>, 8, <span class="string">'DisplayName'</span>, <span class="string">'Original Data'</span>);
+
+<span class="comment">% Plot fitted polynomial curve</span>
+plot(x_fit, y_fit, <span class="string">'r-'</span>, <span class="string">'LineWidth'</span>, 2, <span class="string">'DisplayName'</span>, <span class="string">'Fitted Polynomial'</span>);
+
+<span class="comment">%</span>
+
+<span class="comment">% Add labels and title</span>
+xlabel(<span class="string">'EOG Signal'</span>);
+ylabel(<span class="string">'Eye Angle'</span>);
+title(<span class="string">'Polynomial Fit'</span>);
+xlim([min(LinedupResult(:,5)) max(LinedupResult(:,5))])
+ylim([min(LinedupResult(:,3)) max(LinedupResult(:,3))])
+
+<span class="comment">% Add legend</span>
+legend(<span class="string">'show'</span>);
+
+hold <span class="string">off</span>;
+</pre>
+<pre class="codeoutput">
+Model =
+
+   1.0e+09 *
+
+   -1.9739   -0.0506    0.0019    0.0000    0.0000   -0.0000
+
+</pre>
+<img vspace="5" hspace="5" src="EOGPolyfit_17.png" alt=""> <h2 id="9">Calculate the power of the audio signal</h2>
+<p>windowLength = 1024; % Example window length audioPower = movmean(DSEOGsignal.^2, windowLength);</p>
+<p>figure; plot(timeAxis, audioPower); xlabel('Time (s)'); ylabel('Power'); title('Audio Signal Power with Event Markers'); hold on;</p>
+<p>% Overlay events again for context for i = 1:length(eventTimes) plot(eventTimes(i), max(audioPower), 'ro', 'MarkerSize', 8); end hold off;</p>
+<p class="footer">
+<br>
+<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024b</a>
+<br>
+</p>
+</div>
+<!--
+##### SOURCE BEGIN #####
+close all, clear, clc
+mainpath = 'C:\Users\74147\OneDrive\Documents\MATLAB\EOG-Project-Code-main\Data\EOG_Recording\';
+addpath(mainpath);
+addpath('C:\Users\74147\OneDrive\Documents\MATLAB\EOG-Project-Code-main\THIRDEYE\Code')
+NumFile = 4;
+LinedupResultSum = [];
+for i = 1:NumFile
+ Document = i;% 3 is the best data we have for now
+switch Document
+    case 1
+EOGFilename= [mainpath 'BYB_Recording_2024-10-03_14.14.23.wav'];
+LabelFilename = [mainpath 'BYB_Recording_2024-10-03_14.14.23-events.txt'];
+    case 2
+EOGFilename= [mainpath 'BYB_Recording_2024-10-03_14.12.49.wav'];
+LabelFilename = [mainpath 'BYB_Recording_2024-10-03_14.12.49-events.txt'];
+    case 3
+EOGFilename= [mainpath 'BYB_Recording_2024-10-03_14.07.24.wav'];
+LabelFilename = [mainpath 'BYB_Recording_2024-10-03_14.07.24-events.txt'];
+    case 4
+EOGFilename= [mainpath 'BYB_Recording_2024-10-03_14.03.33.wav'];
+LabelFilename = [mainpath 'BYB_Recording_2024-10-03_14.03.33-events.txt'];
+end
+Angles = [0 10 -10 20 -20 30 -30 40 -40 50 -50 -10 10 -20 20 -30 30 -40 40 -50 50];
+Events = AngleLiner(LabelFilename,Angles);
+[EOGsignal, fs]= audioread(EOGFilename);
+%% Downsample
+Downsamplefactor = 130;
+DSEOGsignal = downsample(EOGsignal,Downsamplefactor); % fs = 10000 Hz downsample by 100 time so 
+DSTime = [0+Downsamplefactor/fs:Downsamplefactor/fs:Downsamplefactor/fs*length(DSEOGsignal)];
+Time = [0+1/fs:1/fs:1/fs*length(EOGsignal)];
+figure;
+s1= subplot(2,1,1);
+plot(DSTime,DSEOGsignal);
+xlabel('Time (s)')
+ylabel('EOG signal (Unit tmd)')
+title('Down Sampled Version (100 Hz)')
+s2 = subplot(2,1,2);
+plot(Time,EOGsignal);
+xlabel('Time (s)')
+ylabel('EOG signal (Unit tmd)')
+title('Original Signal (10000 Hz)')
+linkaxes([s1,s2])
+disp('Downsampling to 100 Hz looks fine,(Filtered from 9 to 22 so twice the Nyquist Frequency)')
+%%
+% Step 3: Plot the audio signal
+eventTimes = Events(:,2);
+eventIDs = Events(:,1);
+EyeAngle = Events(:,3);
+timeAxis = DSTime; % Time axis for the audio data
+figure;
+plot(timeAxis, DSEOGsignal);
+xlabel('Time (s)');
+ylabel('Amplitude');
+title('Audio Signal with Event Markers');
+hold on;
+
+% Step 4: Overlay event markers
+for i = 1:length(eventTimes)
+    % Plot each event with a different color or marker
+    if eventIDs(i) == 1
+        plot(eventTimes(i), 0.1/2, 'k*', 'MarkerSize', 12, 'DisplayName', 'Event 1','MarkerFaceColor','k');
+    elseif eventIDs(i) == 3
+        plot(eventTimes(i), 0.1/2, 'ro', 'MarkerSize', 12, 'DisplayName', 'Event 3','MarkerFaceColor','r');
+    elseif eventIDs(i) == 2
+        plot(eventTimes(i), 0.1/2, 'go', 'MarkerSize', 12, 'DisplayName', 'Event 2','MarkerFaceColor','g');
+    end
+end
+
+legend('EOGsignal','Center','Looking Right','Looking Left');
+hold off;
+
+
+
+%% Event-Centered Analysis 
+
+fs = 10000;
+% Parameters
+window = 0.5; % Time window around each event in seconds
+numEvents = length(eventTimes);
+fs= fs/Downsamplefactor;
+% Define the number of rows and columns for the grid
+rows = 4; % Number of rows per figure
+cols = 3; % Number of columns per figure
+segmentsPerFigure = rows * cols;
+
+% Create figures based on the number of events
+numFigures = ceil(numEvents / segmentsPerFigure);
+PeakEOGValue = zeros(1,length(eventIDs));
+PeakEOGTime = zeros(1,length(eventIDs));
+
+for figIdx = 1:numFigures
+    figure;
+    sgtitle(['Audio Segments around Events - Figure ' num2str(figIdx)]);
+    
+    % Determine the range of events to plot in this figure
+    startIdx = (figIdx - 1) * segmentsPerFigure + 1;
+    endIdx = min(figIdx * segmentsPerFigure, numEvents);
+    
+    for i = startIdx:endIdx
+        subplot(rows, cols, i - startIdx + 1);
+        
+        % Determine start and end times for each segment
+        startTime = max(eventTimes(i) - window, 0);
+        endTime = min(eventTimes(i) + window, timeAxis(end));
+        segmentIdx = round([startTime, endTime] * fs);
+        EOGSegment = DSEOGsignal(segmentIdx(1):segmentIdx(2));
+        segmentTimeAxis = (segmentIdx(1):segmentIdx(2)) / fs;
+        [ampmax,locsmax]=max(EOGSegment);
+        [ampmin,locsmin]=min(EOGSegment);
+        if abs(ampmax) > abs(ampmin)
+        amp = ampmax;
+        locs = locsmax;
+        else
+        amp = ampmin;
+        locs = locsmin;
+        end
+        PeakEOGValue(i)= amp;
+        
+        PeakEOGTime(i)=segmentTimeAxis(locs);
+        % Plot the segment
+        plot(segmentTimeAxis, EOGSegment);
+        xlabel('Time (s)');
+        ylabel('Amplitude');
+        title(['Event ' num2str(eventIDs(i))]);
+    end
+   
+end
+
+%%
+Labelandpeakdifference = Events(:,2)-PeakEOGTime';
+LinedupResult = [Events PeakEOGTime' PeakEOGValue' Labelandpeakdifference];
+LinedupResultSum = [LinedupResultSum;LinedupResult];
+close all
+end
+%%
+degreeofpolyfit = 5;
+Model = polyfit(LinedupResultSum(:,5),LinedupResultSum(:,3),degreeofpolyfit)
+
+x_fit = linspace(-50,50,10000);
+y_fit = polyval(Model,x_fit);
+
+figure;
+hold on;
+
+% Plot original data points
+plot(LinedupResultSum(:,5),LinedupResultSum(:,3), 'bo', 'MarkerSize', 8, 'DisplayName', 'Original Data');
+
+% Plot fitted polynomial curve
+plot(x_fit, y_fit, 'r-', 'LineWidth', 2, 'DisplayName', 'Fitted Polynomial');
+
+%
+
+% Add labels and title
+xlabel('EOG Signal');
+ylabel('Eye Angle');
+title('Polynomial Fit');
+xlim([min(LinedupResult(:,5)) max(LinedupResult(:,5))])
+ylim([min(LinedupResult(:,3)) max(LinedupResult(:,3))])
+
+% Add legend
+legend('show');
+
+hold off;
+
+
+
+
+
+
+%% Calculate the power of the audio signal
+% windowLength = 1024; % Example window length
+% audioPower = movmean(DSEOGsignal.^2, windowLength);
+% 
+% figure;
+% plot(timeAxis, audioPower);
+% xlabel('Time (s)');
+% ylabel('Power');
+% title('Audio Signal Power with Event Markers');
+% hold on;
+% 
+% % Overlay events again for context
+% for i = 1:length(eventTimes)
+%     plot(eventTimes(i), max(audioPower), 'ro', 'MarkerSize', 8);
+% end
+% hold off;
+
+  
+
+
+
+##### SOURCE END #####
+-->
+</body>
+</html>
